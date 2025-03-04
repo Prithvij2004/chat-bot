@@ -4,21 +4,26 @@ import { smoothStream, streamText } from "ai";
 import { myProvider } from "@/lib/ai/model";
 import { systemPrompt } from "@/lib/ai/prompt";
 import { cleanMessage, getRecentMessages } from "@/lib/utils";
-import { createChat, createMessage } from "@/lib/db/queries";
+import { createChat, createMessage, getChatbyId } from "@/lib/db/queries";
+import { NextResponse } from "next/server";
+
+// This route fetches all the messages from chatId
+export async function GET(request) {
+  const id = request.nextUrl.searchParams.get("id");
+  const messages = await getChatbyId(id);
+  return NextResponse.json(messages, { status: 200 });
+}
 
 // This route should return/stream the output generated from the AI model.
 // Also store every it in database. If chat id dosen't exist in database, create a new chat.
 export async function POST(request) {
-  let chatId;
   const { id, messages, selectedModel } = await request.json();
 
-  chatId = id; 
+  const chat = await getChatbyId(id);
 
-  if (!id) {
+  if (!chat) {
     const output = await generateTitle(messages.at(-1));
-    const title = output.text;
-    const chat = await createChat(title);
-    chatId = chat.id;
+    await createChat(id, output.text);
   }
 
   const recentMessages = getRecentMessages(messages); 
@@ -29,7 +34,7 @@ export async function POST(request) {
     messages: recentMessages,
     experimental_transform: smoothStream(),
     async onFinish({ text }) {
-      await createMessage(chatId, cleanMessage(text), "assistant");
+      await createMessage(id, cleanMessage(text), "assistant");
     }
   });
   result.consumeStream();
