@@ -4,13 +4,18 @@ import { smoothStream, streamText } from "ai";
 import { myProvider } from "@/lib/ai/model";
 import { systemPrompt } from "@/lib/ai/prompt";
 import { cleanMessage, getRecentMessages } from "@/lib/utils";
-import { createChat, createMessage, getChatbyId } from "@/lib/db/queries";
+import { 
+  createChat, 
+  createMessage,
+  getChatbyId,
+  getMessagesByChatId
+} from "@/lib/db/queries";
 import { NextResponse } from "next/server";
 
 // This route fetches all the messages from chatId
 export async function GET(request) {
   const id = request.nextUrl.searchParams.get("id");
-  const messages = await getChatbyId(id);
+  const messages = await getMessagesByChatId(id);
   return NextResponse.json(messages, { status: 200 });
 }
 
@@ -25,6 +30,8 @@ export async function POST(request) {
     const output = await generateTitle(messages.at(-1));
     await createChat(id, output.text);
   }
+
+  await createMessage(id, messages.at(-1).content, "user");
 
   const recentMessages = getRecentMessages(messages); 
 
