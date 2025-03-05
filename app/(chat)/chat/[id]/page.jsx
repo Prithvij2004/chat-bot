@@ -17,7 +17,7 @@ export default async function Page({ params }) {
 
   return (
     <div>
-      <InputHandler initialMessages={messages} />
+      <InputHandler id={id} initialMessages={messages} />
     </div>
   )
 }

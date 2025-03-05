@@ -44,7 +44,6 @@ export async function POST(request) {
       await createMessage(id, cleanMessage(text), "assistant");
     }
   });
-  result.consumeStream();
 
-  return result.toTextStreamResponse()
+  return result.toDataStreamResponse()
 }

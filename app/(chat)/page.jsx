@@ -6,6 +6,8 @@ export default async function Page() {
   const id = crypto.randomUUID();
   
   return (
-    <InputHandler id={id} />
+    <div className='flex items-center justify-center h-screen'>
+      <InputHandler id={id} />
+    </div>
   )
 }
